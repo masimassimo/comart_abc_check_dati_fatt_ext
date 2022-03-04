@@ -24,6 +24,8 @@ class SaleOrder(models.Model):
                 if cliente.vat == False and cliente.fiscalcode == False:
                     raise UserError('I campi partita iva e codice fiscale del cliente sono vuoti. Compilare almeno un campo.')
                 else:
+                    if((not cliente.codice_destinatario or cliente.codice_destinatario == 'XXXXXXX' or cliente.codice_destinatario == '0000000') and not cliente.pec_destinatario):
+                        raise Warning("Il Cliente " + partner.name + " non ha impostato correttamente il Codice SDI o la PEC! Compilare uno di questi due campi in anagrafica per procedere.")
                     cliente.check_vat()
                 #TODO
                 #se sono compilati va verificato il formato
