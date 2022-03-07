@@ -3,10 +3,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import AccessError, UserError, ValidationError
 
-#class SaleAdvancePaymentInv(models.TransientModel):
-#    _name = "sale.advance.payment.inv"
-#    _inherit = "sale.advance.payment.inv"
-
 class SaleOrder(models.Model):
     _name = "sale.order"
     _inherit = "sale.order"
@@ -14,47 +10,54 @@ class SaleOrder(models.Model):
     def _create_invoices(self, grouped=False, final=False, date=None):
         #Verifica Campi cliente
         
-        #sale_order = self.env['sale.order'].browse(self._context.get('active_id'))
-
         for order in self:
+            errorMessage =''
             if order.partner_id == False:
-                raise UserError('Il campo Cliente è obbligatorio.')
+                errorMessage = errorMessage + 'Il campo Cliente è obbligatorio.'
             else:
                 cliente = order.partner_id
                 if cliente.vat == False and cliente.fiscalcode == False:
-                    raise UserError('I campi partita iva e codice fiscale del cliente sono vuoti. Compilare almeno un campo.')
+                    if (errorMessage != ''):
+                        errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'I campi Partita IVA e Codice Fiscale del cliente sono vuoti. Compilare almeno un campo.'
                 else:
                     if((not cliente.codice_destinatario or cliente.codice_destinatario == 'XXXXXXX' or cliente.codice_destinatario == '0000000') and not cliente.pec_destinatario):
-                        raise UserError("Il Cliente " + cliente.name + " non ha impostato correttamente il Codice SDI o la PEC! Compilare uno di questi due campi in anagrafica per procedere.")
+                        if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                        errorMessage = errorMessage + "Il Cliente " + cliente.name + " non ha impostato correttamente il Codice SDI o la PEC! Compilare uno di questi due campi in anagrafica per procedere."
                     cliente.check_vat()
                 #TODO
                 #se sono compilati va verificato il formato
                 if cliente.street == False:
-                    raise UserError('Il campo indirizzo del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo Indirizzo del cliente non è compilato'
                 if cliente.city == False:
-                    raise UserError('Il campo città del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo Città del cliente non è compilato'
                 if cliente.zip == False:
-                    raise UserError('Il campo CAP del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo CAP del cliente non è compilato'
                 if cliente.state_id == False:
-                    raise UserError('Il campo Provincia del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo Provincia del cliente non è compilato'
                 if cliente.codice_destinatario == False:
-                    raise UserError('Il campo Provincia del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo Codice Destinatario del cliente non è compilato'
                 if cliente.property_account_position_id == False:
-                    raise UserError('Il campo Posizione Fiscale del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo Posizione Fiscale del cliente non è compilato'
                 if cliente.is_pa == True and cliente.ipa_code == False:
-                   raise UserError('Il campo Codice IPA del cliente non è compilato')
+                    if (errorMessage != ''):
+                            errorMessage = errorMessage + '\n'
+                    errorMessage = errorMessage + 'Il campo Codice IPA del cliente non è compilato'
+                if (errorMessage != ''):
+                    raise UserError(errorMessage)
+                
         super()._create_invoices(grouped, final, date)
 
-# class abc_check_dati_fatt_ext(models.Model):
-#     _name = 'abc_check_dati_fatt_ext.abc_check_dati_fatt_ext'
-#     _description = 'abc_check_dati_fatt_ext.abc_check_dati_fatt_ext'
-
-#     name = fields.Char()
-#     value = fields.Integer()
-#     value2 = fields.Float(compute="_value_pc", store=True)
-#     description = fields.Text()
-#
-#     @api.depends('value')
-#     def _value_pc(self):
-#         for record in self:
-#             record.value2 = float(record.value) / 100
