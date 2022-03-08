@@ -59,5 +59,5 @@ class SaleOrder(models.Model):
                 if (errorMessage != ''):
                     raise UserError(errorMessage)
                 
-        super()._create_invoices(grouped, final, date)
+        return super()._create_invoices(grouped, final, date)
 
